@@ -1,0 +1,56 @@
+# Learn more: https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
+
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+web-build/
+
+# Expo
+.expo/
+.expo-shared/
+
+# Metro
+.metro/
+.metro-health-check*
+
+# Firebase keys / sensitive info
+.env
+.env.local
+.env*.local
+
+# Debug logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# TypeScript
+*.tsbuildinfo
+
+# macOS
+.DS_Store
+
+# Android / iOS native
+*.jks
+*.keystore
+*.p8
+*.p12
+*.key
+*.mobileprovision
+*.orig.*
+
+# Kotlin
+.kotlin/
+
+# Certs / Keys
+*.pem
+
+# Misc
+expo-env.d.ts
+app-example
+
+echo "android/" >> .gitignore
+echo "ios/" >> .gitignore
+android/
+ios/
