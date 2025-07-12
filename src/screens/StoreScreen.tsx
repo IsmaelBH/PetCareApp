@@ -155,22 +155,21 @@ export default function StoreScreen() {
         </View>
     );
 }
-
 const styles = StyleSheet.create({
     container: {
-        backgroundColor: '#111',
+        backgroundColor: '#f2f2f2',
         flex: 1,
         padding: 10,
         paddingTop: 20,
     },
     loadingContainer: {
         flex: 1,
-        backgroundColor: '#111',
+        backgroundColor: '#f2f2f2',
         justifyContent: 'center',
         alignItems: 'center',
     },
     header: {
-        color: '#fff',
+        color: '#222',
         fontSize: 20,
         fontWeight: 'bold',
         marginTop: 10,
@@ -178,12 +177,13 @@ const styles = StyleSheet.create({
         textAlign: 'center',
     },
     featuredCard: {
-        backgroundColor: '#222',
+        backgroundColor: '#fff',
         borderRadius: 12,
         padding: 10,
         marginRight: 15,
         width: CARD_WIDTH,
         alignItems: 'center',
+        elevation: 3,
     },
     featuredImage: {
         width: '75%',
@@ -192,18 +192,19 @@ const styles = StyleSheet.create({
         marginBottom: 12,
     },
     featuredTitle: {
-        color: '#fff',
+        color: '#333',
         fontSize: 18,
         textAlign: 'center',
         fontWeight: 'bold',
     },
     card: {
-        backgroundColor: '#222',
+        backgroundColor: '#fff',
         marginBottom: 12,
         borderRadius: 10,
         padding: 12,
         flexDirection: 'row',
         alignItems: 'center',
+        elevation: 2,
     },
     image: {
         width: 90,
@@ -215,12 +216,12 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     title: {
-        color: '#fff',
+        color: '#222',
         fontSize: 16,
         fontWeight: 'bold',
     },
     price: {
-        color: '#ccc',
+        color: '#555',
         marginTop: 4,
     },
     modalContainer: {
@@ -230,7 +231,7 @@ const styles = StyleSheet.create({
         padding: 20,
     },
     modalContent: {
-        backgroundColor: '#222',
+        backgroundColor: '#fff',
         borderRadius: 10,
         padding: 20,
         alignItems: 'center',
@@ -242,18 +243,18 @@ const styles = StyleSheet.create({
         borderRadius: 10,
     },
     modalTitle: {
-        color: '#fff',
+        color: '#000',
         fontSize: 20,
         fontWeight: 'bold',
         marginBottom: 10,
     },
     modalPrice: {
-        color: '#ccc',
+        color: '#444',
         fontSize: 16,
         marginBottom: 8,
     },
     modalDescription: {
-        color: '#ddd',
+        color: '#555',
         fontSize: 14,
         textAlign: 'center',
         marginBottom: 15,
@@ -268,7 +269,7 @@ const styles = StyleSheet.create({
         marginRight: 6,
     },
     closeButton: {
-        backgroundColor: '#f4511e',
+        backgroundColor: '#1976d2',
         padding: 10,
         borderRadius: 5,
         alignItems: 'center',

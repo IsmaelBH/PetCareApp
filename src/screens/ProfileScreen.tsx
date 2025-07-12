@@ -24,6 +24,7 @@ export default function ProfileScreen() {
     const dispatch = useDispatch();
     const [imageUri, setImageUri] = useState<string | null>(null);
     const [purchases, setPurchases] = useState<any[]>([]);
+    const [appointments, setAppointments] = useState<any[]>([]);
 
     useEffect(() => {
         const loadImage = async () => {
@@ -37,9 +38,10 @@ export default function ProfileScreen() {
         if (!uid) return;
 
         const db = getDatabase();
-        const dbRef = ref(db, `purchases/${uid}`);
 
-        const unsubscribe = onValue(dbRef, (snapshot) => {
+        // Compras
+        const dbPurchasesRef = ref(db, `purchases/${uid}`);
+        const unsubscribePurchases = onValue(dbPurchasesRef, (snapshot) => {
             const data = snapshot.val();
             if (data) {
                 const parsed = Object.values(data);
@@ -49,7 +51,22 @@ export default function ProfileScreen() {
             }
         });
 
-        return () => unsubscribe();
+        // Turnos
+        const dbAppointmentsRef = ref(db, `appointmentsPorUsuario/${uid}`);
+        const unsubscribeAppointments = onValue(dbAppointmentsRef, (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+                const parsed = Object.values(data);
+                setAppointments(parsed.reverse());
+            } else {
+                setAppointments([]);
+            }
+        });
+
+        return () => {
+            unsubscribePurchases();
+            unsubscribeAppointments();
+        };
     }, [uid]);
 
     const openCamera = async () => {
@@ -92,6 +109,14 @@ export default function ProfileScreen() {
         </View>
     );
 
+    const renderAppointmentCard = ({ item }: { item: any }) => (
+        <View style={styles.card}>
+            <Text style={styles.dateText}>📆 Día: {item.date}</Text>
+            <Text style={styles.productText}>🕒 Hora: {item.time}</Text>
+            <Text style={styles.productText}>🩺 Tipo: {item.type}</Text>
+        </View>
+    );
+
     return (
         <View style={styles.container}>
             <ScrollView contentContainerStyle={{ paddingBottom: 140 }}>
@@ -114,12 +139,24 @@ export default function ProfileScreen() {
                 <Text style={styles.label}>Email:</Text>
                 <Text style={styles.info}>{email}</Text>
 
+                {appointments.length > 0 && (
+                    <>
+                        <Text style={[styles.label, { marginTop: 30 }]}>Historial de turnos:</Text>
+                        <FlatList
+                            data={appointments}
+                            keyExtractor={(_, index) => `appt-${index}`}
+                            renderItem={renderAppointmentCard}
+                            scrollEnabled={false}
+                        />
+                    </>
+                )}
+
                 {purchases.length > 0 && (
                     <>
                         <Text style={[styles.label, { marginTop: 30 }]}>Historial de compras:</Text>
                         <FlatList
                             data={purchases}
-                            keyExtractor={(_, index) => index.toString()}
+                            keyExtractor={(_, index) => `purchase-${index}`}
                             renderItem={renderPurchaseCard}
                             scrollEnabled={false}
                         />
@@ -137,7 +174,7 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#000',
+        backgroundColor: '#f2f2f2',
         padding: 20,
     },
     profileImageContainer: {
@@ -159,12 +196,12 @@ const styles = StyleSheet.create({
         padding: 6,
     },
     label: {
-        color: '#aaa',
+        color: '#444',
         fontSize: 16,
         marginTop: 20,
     },
     info: {
-        color: '#fff',
+        color: '#000',
         fontSize: 18,
         fontWeight: 'bold',
         marginTop: 4,
@@ -177,30 +214,31 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     logoutText: {
-        color: '#64b5f6',
+        color: '#1e90ff',
         fontSize: 14,
         textDecorationLine: 'underline',
         marginBottom: 20,
     },
     card: {
-        backgroundColor: '#222',
+        backgroundColor: '#fff',
         borderRadius: 10,
         padding: 12,
         marginTop: 12,
+        elevation: 3,
     },
     dateText: {
-        color: '#ccc',
+        color: '#000',
         fontSize: 14,
         marginBottom: 4,
     },
     totalText: {
-        color: '#fff',
+        color: '#111',
         fontSize: 16,
         fontWeight: 'bold',
         marginBottom: 6,
     },
     productText: {
-        color: '#aaa',
+        color: '#444',
         fontSize: 14,
     },
 });

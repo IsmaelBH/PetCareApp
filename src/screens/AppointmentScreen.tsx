@@ -9,18 +9,19 @@ import {
     TouchableWithoutFeedback,
     Platform,
     Pressable,
+    ScrollView,
     Image,
 } from 'react-native';
 import { Calendar } from 'react-native-calendars';
 import { Picker } from '@react-native-picker/picker';
 import { rtdb } from '../firebase/firebase';
-import { ref, set, get } from 'firebase/database';
+import { ref, set, get, push } from 'firebase/database';
 import { useSelector } from 'react-redux';
 import { RootState } from '../redux/store';
 import logo from '../../assets/logo.png';
 
 const AppointmentScreen = () => {
-    const uid = useSelector((state: RootState) => state.auth.uid);
+    const userId = useSelector((state: RootState) => state.auth.uid);
     const [selectedDate, setSelectedDate] = useState('');
     const [modalVisible, setModalVisible] = useState(false);
     const [selectedTime, setSelectedTime] = useState('');
@@ -31,29 +32,27 @@ const AppointmentScreen = () => {
         '09:30', '10:00', '10:30', '11:00', '11:30',
         '15:00', '15:30', '16:00', '16:30', '17:00', '17:30',
     ];
-    const appointmentTypes = ['vacunas', 'control', 'cirugías', 'baño', 'otros'];
+    const appointmentTypes = ['Control', 'Baño', 'Vacunas', 'Cirugías', 'Otros'];
 
-    const getCurrentWeekDays = () => {
-        const days: string[] = [];
+    const getValidWeekDays = () => {
+        const result: string[] = [];
         const today = new Date();
-        let count = 0;
-        let date = new Date();
+        let added = 0;
+        let date = new Date(today);
 
-        while (count < 5) {
-            const day = date.getDay(); // 0 (Sun) to 6 (Sat)
+        while (added < 5) {
+            const day = date.getDay();
             if (day >= 1 && day <= 5) {
-                days.push(date.toISOString().split('T')[0]);
-                count++;
+                result.push(date.toISOString().split('T')[0]);
+                added++;
             }
             date.setDate(date.getDate() + 1);
         }
-
-        return days;
+        return result;
     };
 
-
     const isDateAvailable = (date: string) => {
-        return getCurrentWeekDays().includes(date);
+        return getValidWeekDays().includes(date);
     };
 
     const fetchUnavailableSlots = async () => {
@@ -71,7 +70,7 @@ const AppointmentScreen = () => {
     };
 
     const confirmAppointment = async () => {
-        if (!selectedTime || !selectedDate || !uid) return;
+        if (!selectedTime || !selectedDate) return;
 
         const slotRef = ref(rtdb, `appointments/${selectedDate}/${selectedTime}`);
         const snapshot = await get(slotRef);
@@ -82,11 +81,19 @@ const AppointmentScreen = () => {
         }
 
         await set(slotRef, {
-            userId: uid,
+            userId,
             tipo: selectedType,
             hora: selectedTime,
-            fecha: selectedDate,
         });
+
+        // 👉 Guardar en historial del usuario
+        const userApptRef = ref(rtdb, `appointmentsPorUsuario/${userId}`);
+        const newAppt = {
+            date: selectedDate,
+            time: selectedTime,
+            type: selectedType,
+        };
+        await push(userApptRef, newAppt);
 
         setModalVisible(false);
         setSelectedTime('');
@@ -116,18 +123,20 @@ const AppointmentScreen = () => {
                     markedDates={markedDates}
                     hideExtraDays={false}
                     theme={{
-                        backgroundColor: '#111',
-                        calendarBackground: '#111',
+                        backgroundColor: '#fff',
+                        calendarBackground: '#fff',
                         todayTextColor: '#1e90ff',
-                        dayTextColor: '#fff',
-                        textDisabledColor: '#444',
+                        dayTextColor: '#000',
+                        textDisabledColor: '#ccc',
                         arrowColor: '#1e90ff',
                         selectedDayBackgroundColor: '#1e90ff',
                         selectedDayTextColor: '#fff',
-                        monthTextColor: '#fff',
+                        monthTextColor: '#000',
                     }}
                     dayComponent={({ date }) => {
-                        const dateStr = date?.dateString;
+                        if (!date || !date.dateString) return null;
+
+                        const dateStr = date.dateString;
                         const isAvailable = isDateAvailable(dateStr);
                         const isSelected = selectedDate === dateStr;
 
@@ -139,20 +148,22 @@ const AppointmentScreen = () => {
                                     isSelected && styles.selectedDay,
                                 ]}
                             >
-                                <Text style={[
-                                    styles.dayText,
-                                    !isAvailable && styles.disabledText,
-                                    isSelected && styles.selectedDayText,
-                                ]}>
+                                <Text
+                                    style={[
+                                        styles.dayText,
+                                        !isAvailable && styles.disabledText,
+                                        isSelected && styles.selectedDayText,
+                                    ]}
+                                >
                                     {date.day}
                                 </Text>
                             </Pressable>
                         );
                     }}
+
                 />
             </View>
 
-            {/* MODAL */}
             <Modal
                 transparent
                 visible={modalVisible}
@@ -202,20 +213,19 @@ export default AppointmentScreen;
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        justifyContent: 'center',
         alignItems: 'center',
         paddingTop: Platform.OS === 'android' ? 40 : 60,
-
+        backgroundColor: '#f2f2f2',
     },
     logo: {
         width: 140,
         height: 140,
         resizeMode: 'contain',
-        marginBottom: 40,
+        marginBottom: 20,
     },
     card: {
         width: '90%',
-        backgroundColor: '#1a1a1a',
+        backgroundColor: '#fff',
         borderRadius: 10,
         padding: 10,
         elevation: 5,
@@ -228,7 +238,7 @@ const styles = StyleSheet.create({
         borderRadius: 16,
     },
     dayText: {
-        color: '#fff',
+        color: '#000',
     },
     selectedDay: {
         backgroundColor: '#1e90ff',
@@ -238,7 +248,7 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
     },
     disabledText: {
-        color: '#666',
+        color: '#ccc',
     },
     modalBackground: {
         flex: 1,
